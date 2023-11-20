@@ -219,7 +219,7 @@ def montarTabelaSimplex():
             verificarMenorIgual(quantRestricoesDesigualdade, matrizDesigualdade, quantDeVariaveisDeDecisao, quantidadeVariaveisArtificiais)
             adicionarFuncaoObjetivoFaseI(quantDeVariaveisDeDecisao,quantRestricoesDesigualdade , quantidadeVariaveisArtificiais )
             if(quantRestricoesMaiorIgual > 0):
-                adicionarVariaveisMaiorIgual(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais, quantRestricoesDesigualdade)
+                adicionarVariaveisMaiorIgual(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais, quantRestricoesDesigualdade, matrizDesigualdade)
             
             executarOperacaoElementarInicialFaseI()
             duasFases = True   
@@ -283,12 +283,12 @@ def procurarVariaveisBasicasAposFaseI(numeroTotalRestricoes):
             
 
 
-def adicionarVariaveisMaiorIgual(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais, quantRestricoesDesigualdade):
+def adicionarVariaveisMaiorIgual(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais, quantRestricoesDesigualdade,matrizDesigualdade):
     #adicionando na função objetivo
     for i in range(quantRestricoesMaiorIgual):
         tabelaSimplex[0].insert(0, 0)
     
-    #adicionando nas restrições de maior igual
+    #adicionando nas restrições de menor igual
     for i in range(1, quantRestricoesMaiorIgual + 1):
         ultimoElemento = tabelaSimplex[i][len(tabelaSimplex[i]) - 1]
         for j in range(len(tabelaSimplex[i]) + quantRestricoesDesigualdade + quantidadeVariaveisArtificiais):
@@ -298,13 +298,32 @@ def adicionarVariaveisMaiorIgual(quantDeVariaveisDeDecisao,quantRestricoesMaiorI
         tabelaSimplex[i].pop()
         tabelaSimplex[i].append(ultimoElemento)
 
-    #adicionando nas restrições de menor igual
-    for i in range(quantRestricoesMaiorIgual + 1 , quantRestricoesMaiorIgual + quantRestricoesDesigualdade  + 1):
-        for j in range(len(tabelaSimplex[i])):
-            if(j >= quantDeVariaveisDeDecisao and j < quantDeVariaveisDeDecisao + quantRestricoesDesigualdade):
-                tabelaSimplex[i].insert(j, 0)
-    print(tabelaSimplex)
-
+    #criando linha de restrições de maior igual
+    aux = []
+    for i in range(quantRestricoesDesigualdade):
+        aux2 = []
+        for j in range(quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual + quantRestricoesDesigualdade*2 + 1):
+            if(j >= 0 and j <= quantDeVariaveisDeDecisao - 1):
+                aux2.append(matrizDesigualdade[i][j])
+            elif(j >= quantDeVariaveisDeDecisao and j < quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual):
+                aux2.append(0)
+            elif(j == (quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual)):
+                aux2.append(-1)
+            elif(j == (quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual + 1)):
+                aux2.append(1)
+            else:
+                aux2.append(0)
+        aux2.pop()
+        aux2.append(matrizDesigualdade[i][len(matrizDesigualdade[i]) - 1])
+        aux.append(aux2)
+    
+    for i in range(quantRestricoesMaiorIgual +1, len(tabelaSimplex)):
+        tabelaSimplex.pop(i)
+    for i in range(len(aux)):
+        tabelaSimplex.append(aux[i])
+    
+    converterElementosMatrizParaInt(tabelaSimplex)
+    print("teste")
 
 
 def adicionarFuncaoObjetivoFaseI(quantDeVariaveisDeDecisao, quantVariaveisExcessoEFolga,quantVariaveisArtificiais):
