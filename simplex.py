@@ -23,6 +23,7 @@ def verificarMenorNumero():
 
 def verificarQualALinhaPivo():
     global indiceLinhaPivo
+    solucaoIlimitada = True
     menor = 1000000000000000000
     for i in range(1,len(tabelaSimplex)):
         print("inicio",tabelaSimplex[i][indiceColunaPivo])
@@ -33,6 +34,9 @@ def verificarQualALinhaPivo():
             if(menor > divisao and divisao > 0):
                 indiceLinhaPivo = i
                 menor = divisao
+                solucaoIlimitada = False
+    return solucaoIlimitada
+    
 
 def igualarLinhaPivoA1():
     global indiceColunaPivo
@@ -84,8 +88,10 @@ def realizarOperacoesElementares():
                     if(linha != indiceLinhaPivo):
                         tabelaSimplex[linha][coluna] -= tabelaSimplex[indiceLinhaPivo][coluna]*valorParaSerZero
     
-    print(tabelaSimplex)
 
+def imprimirTabelaSimplex():
+    for linha in tabelaSimplex:
+        print(linha)
 
 def lerArquivo():
     with open('problema2.txt', 'r') as arquivo:
@@ -299,28 +305,16 @@ def adicionarVariaveisMaiorIgual(quantDeVariaveisDeDecisao,quantRestricoesMaiorI
         tabelaSimplex[i].append(ultimoElemento)
 
     #criando linha de restrições de maior igual
-    aux = []
-    for i in range(quantRestricoesDesigualdade):
-        aux2 = []
-        for j in range(quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual + quantRestricoesDesigualdade*2 + 1):
-            if(j >= 0 and j <= quantDeVariaveisDeDecisao - 1):
-                aux2.append(matrizDesigualdade[i][j])
-            elif(j >= quantDeVariaveisDeDecisao and j < quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual):
-                aux2.append(0)
-            elif(j == (quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual)):
-                aux2.append(-1)
-            elif(j == (quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual + 1)):
-                aux2.append(1)
-            else:
-                aux2.append(0)
-        aux2.pop()
-        aux2.append(matrizDesigualdade[i][len(matrizDesigualdade[i]) - 1])
-        aux.append(aux2)
+    for i in range(quantRestricoesMaiorIgual + 1, len(tabelaSimplex) ):
+        k = quantRestricoesMaiorIgual
+        coluna = quantDeVariaveisDeDecisao
+        while( k != 0):
+            tabelaSimplex[i].insert(coluna, 0)
+            k -= 1
+            coluna +=1
+
     
-    for i in range(quantRestricoesMaiorIgual +1, len(tabelaSimplex)):
-        tabelaSimplex.pop(i)
-    for i in range(len(aux)):
-        tabelaSimplex.append(aux[i])
+   
     
     converterElementosMatrizParaInt(tabelaSimplex)
     print("teste")
@@ -344,9 +338,12 @@ def executarFaseDois():
         verificarMenorNumero()
         if(indiceColunaPivo == -1):
             break
-        verificarQualALinhaPivo()
-        igualarLinhaPivoA1()
-        realizarOperacoesElementares()
+        if(verificarQualALinhaPivo()):
+            print("a solução é ilimitada")
+            break
+        else:
+            igualarLinhaPivoA1()
+            realizarOperacoesElementares()
 def executarFaseUm():
     while(True):
         verificarMenorNumero()
@@ -355,17 +352,22 @@ def executarFaseUm():
             carregarFuncaoObjetivosAposFaseI()
             executarFaseDois()
             break
-        verificarQualALinhaPivo()
-        igualarLinhaPivoA1()
-        realizarOperacoesElementares()
-        aproximar_matriz_global()
+        if(verificarQualALinhaPivo()):
+            print("a solução é ilimitada")
+            break
+        else:
+            igualarLinhaPivoA1()
+            realizarOperacoesElementares()
+            aproximar_matriz_global()
 
 #executarFaseDois()
 def main():
     montarTabelaSimplex()
     if(duasFases == False):
         executarFaseDois()
+        imprimirTabelaSimplex()
     else:
         executarFaseUm()
+        imprimirTabelaSimplex()
 main()
 #montarTabelaSimplex()
