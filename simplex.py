@@ -31,7 +31,7 @@ def verificarQualALinhaPivo():
         if(tabelaSimplex[i][indiceColunaPivo] > 0 ):
             divisao = float(tabelaSimplex[i][len(tabelaSimplex[i]) - 1]) / tabelaSimplex[i][indiceColunaPivo]
             print("divisao", divisao)
-            if(menor > divisao and divisao > 0):
+            if(menor > divisao and divisao >= 0):
                 indiceLinhaPivo = i
                 menor = divisao
                 solucaoIlimitada = False
@@ -217,20 +217,69 @@ def montarTabelaSimplex():
     if(quantRestricoesDesigualdade > 0):
         todosBPostivos = True
         for i in range(len(matrizDesigualdade)):
-            if(int(matrizDesigualdade[i][quantDeVariaveisDeDecisao])) < 0:
+            if(int(matrizDesigualdade[i][len(matrizDesigualdade[i]) - 1])) < 0:
                 todosBPostivos = False
 
         if(todosBPostivos):
             quantidadeVariaveisArtificiais = quantRestricoesDesigualdade
             verificarMenorIgual(quantRestricoesDesigualdade, matrizDesigualdade, quantDeVariaveisDeDecisao, quantidadeVariaveisArtificiais)
             adicionarFuncaoObjetivoFaseI(quantDeVariaveisDeDecisao,quantRestricoesDesigualdade , quantidadeVariaveisArtificiais )
+            #na verdade é menor igual😶
             if(quantRestricoesMaiorIgual > 0):
                 adicionarVariaveisMaiorIgual(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais, quantRestricoesDesigualdade, matrizDesigualdade)
-            
+        
+        if(quantRestricoesIgualdade > 0):
+            adicionarVariaveisIgualdade(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais + quantRestricoesIgualdade, quantRestricoesDesigualdade, quantRestricoesIgualdade,matrizIgualdade)
+            duasFases = True   
+            executarOperacaoElementarInicialFaseI()
+        else:
             executarOperacaoElementarInicialFaseI()
             duasFases = True   
     if(duasFases == False):
         adicionandoFuncaoObjetivo(quantRestricoesMaiorIgual, funcaoObjetivo, quantRestricoesDesigualdade)
+
+
+def adicionarVariaveisIgualdade(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais, quantRestricoesDesigualdade, quantRestricoesIgualdade,matrizIgualdade):
+    adicionarFuncaoObjetivoFaseI(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual + quantRestricoesDesigualdade , quantidadeVariaveisArtificiais )
+    tabelaSimplex.pop(1)
+    #adicionar 0 nas restrições de menor igual
+    for i in range(1, quantRestricoesMaiorIgual + 1):
+        ultimoElemento = tabelaSimplex[i][len(tabelaSimplex[i]) - 1]
+        indice = quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual
+        quantRepeticao = quantRestricoesIgualdade
+        while(quantRepeticao != 0):
+            tabelaSimplex[i].insert(indice, 0)
+            quantRepeticao -= 1
+
+    #adicionando 0 nas restrições de maior igual
+    for i in range(quantRestricoesMaiorIgual + 1, len(tabelaSimplex) ):
+        k = quantRestricoesIgualdade
+        coluna = len(tabelaSimplex[i]) - 1
+        while( k != 0):
+            tabelaSimplex[i].insert(coluna, 0)
+            k -= 1
+            coluna +=1
+    
+    for i in range(len(matrizIgualdade)):
+        tabelaSimplex.append(matrizIgualdade[i])
+
+    #adicionando 0 nas restrições de igualdade
+    converterElementosMatrizParaInt(matrizIgualdade)
+    for i in range(quantRestricoesDesigualdade + quantRestricoesMaiorIgual + 1, quantRestricoesDesigualdade + quantRestricoesMaiorIgual + quantRestricoesIgualdade+ 1):
+        ultimoElemento = tabelaSimplex[i][len(tabelaSimplex[i]) - 1]
+        for j in range(quantDeVariaveisDeDecisao, quantDeVariaveisDeDecisao + quantRestricoesMaiorIgual + quantRestricoesDesigualdade + quantidadeVariaveisArtificiais):
+            if(quantDeVariaveisDeDecisao + i) == j:
+                tabelaSimplex[i].append(1)
+            else:
+                tabelaSimplex[i].append(0)
+        tabelaSimplex[i].pop(quantDeVariaveisDeDecisao)
+        tabelaSimplex[i].append(ultimoElemento)
+
+
+
+    
+    imprimirTabelaSimplex()
+
 
 def carregarFuncaoObjetivosAposFaseI():    
     dados = lerArquivo()
@@ -244,14 +293,14 @@ def carregarFuncaoObjetivosAposFaseI():
         #removerColunaVariavelAritificial(i)    
 
     i = len( tabelaSimplex[0]) -2
-    aux = quantRestricoesDesigualdade
+    aux = quantRestricoesDesigualdade + quantRestricoesIgualdade
     while(aux != 0):
         removerColunaVariavelAritificial(i)
-        i-= 1
+        i -= 1 
         aux -= 1
 
 
-    adicionandoFuncaoObjetivo(quantRestricoesMaiorIgual , funcaoObjetivo, quantRestricoesDesigualdade + quantRestricoesIgualdade )
+    adicionandoFuncaoObjetivo(quantRestricoesMaiorIgual , funcaoObjetivo, quantRestricoesDesigualdade )
     tabelaSimplex.pop(1)
     procurarVariaveisBasicasAposFaseI(quantRestricoesMaiorIgual + quantRestricoesDesigualdade + quantRestricoesIgualdade)
     
