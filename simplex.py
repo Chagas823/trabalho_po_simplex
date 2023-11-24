@@ -235,13 +235,19 @@ def montarTabelaSimplex():
         else:
             executarOperacaoElementarInicialFaseI()
             duasFases = True   
+    
+    elif(quantRestricoesIgualdade > 0):
+        adicionarVariaveisIgualdade(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais + quantRestricoesIgualdade, quantRestricoesDesigualdade, quantRestricoesIgualdade,matrizIgualdade)
+        duasFases = True   
+        executarOperacaoElementarInicialFaseI()
     if(duasFases == False):
         adicionandoFuncaoObjetivo(quantRestricoesMaiorIgual, funcaoObjetivo, quantRestricoesDesigualdade)
 
 
 def adicionarVariaveisIgualdade(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual, quantidadeVariaveisArtificiais, quantRestricoesDesigualdade, quantRestricoesIgualdade,matrizIgualdade):
     adicionarFuncaoObjetivoFaseI(quantDeVariaveisDeDecisao,quantRestricoesMaiorIgual + quantRestricoesDesigualdade , quantidadeVariaveisArtificiais )
-    tabelaSimplex.pop(1)
+    if(quantRestricoesDesigualdade > 0):
+        tabelaSimplex.pop(1)
     #adicionar 0 nas restrições de menor igual
     for i in range(1, quantRestricoesMaiorIgual + 1):
         ultimoElemento = tabelaSimplex[i][len(tabelaSimplex[i]) - 1]
