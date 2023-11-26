@@ -392,6 +392,8 @@ def executarFaseDois():
     while(True):
         verificarMenorNumero()
         if(indiceColunaPivo == -1):
+            imprimirTabelaSimplex()
+            mostrarResultadoVariaveis()
             break
         if(verificarQualALinhaPivo()):
             print("a solução é ilimitada")
@@ -415,7 +417,26 @@ def executarFaseUm():
             realizarOperacoesElementares()
             aproximar_matriz_global()
 
-#executarFaseDois()
+def mostrarResultadoVariaveis():
+    for i in range(len(tabelaSimplex[0])  ):
+        quantZero = 0
+        quantUm = 0
+        valor = 0
+        for j in range(1, len(tabelaSimplex)):
+            if(tabelaSimplex[j][i] == 0):
+                quantZero += 1
+                
+            elif(tabelaSimplex[j][i] == 1):
+                quantUm +=1
+                valor = tabelaSimplex[j][len(tabelaSimplex[j]) - 1]
+        if(quantUm == 1 and quantZero == len(tabelaSimplex) -2):
+            print("X", i +1, " = ", valor)
+        else:
+            print("X", i +1, " = ", 0)
+
+    print("Z = ", tabelaSimplex[0][len(tabelaSimplex[0]) -1])
+
+
 def main():
     montarTabelaSimplex()
     if(duasFases == False):
@@ -423,6 +444,6 @@ def main():
         imprimirTabelaSimplex()
     else:
         executarFaseUm()
-        imprimirTabelaSimplex()
+        
 main()
 #montarTabelaSimplex()
