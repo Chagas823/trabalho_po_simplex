@@ -287,7 +287,8 @@ def adicionarVariaveisIgualdade(quantDeVariaveisDeDecisao,quantRestricoesMaiorIg
     imprimirTabelaSimplex()
 
 
-def carregarFuncaoObjetivosAposFaseI():    
+def carregarFuncaoObjetivosAposFaseI():
+    temSolucao = True    
     dados = lerArquivo()
     funcaoObjetivo = dados[1].split(' ')
     quantDeVariaveisDeDecisao = int(dados[0])
@@ -295,8 +296,28 @@ def carregarFuncaoObjetivosAposFaseI():
     quantRestricoesIgualdade = int(dados[3 + quantRestricoesMaiorIgual])
     quantRestricoesDesigualdade = int(dados[4 + quantRestricoesMaiorIgual + quantRestricoesIgualdade])
 
+    quantDeVariaveisDeDecisao = int(dados[0])
     #for i in range(len(tabelaSimplex[0]) -2,  quantDeVariaveisDeDecisao + quantRestricoesDesigualdade, -1):
         #removerColunaVariavelAritificial(i)    
+
+    #verificar se uma variavel artificial está na base
+    contador = quantRestricoesDesigualdade + quantRestricoesIgualdade
+    indice = len(tabelaSimplex) -2
+    while(contador != 0):
+        if(tabelaSimplex[0][indice] == 0):
+            quantZero = 0
+            quantUm = 0
+            for j in range(1, len(tabelaSimplex)):
+                if(tabelaSimplex[j][contador] == 0):
+                    quantZero += 1
+                elif(tabelaSimplex[j][contador] == 1):
+                    quantUm += 1
+            if(quantUm == 1 and quantZero == len(tabelaSimplex) -2):
+                print("temos variavel artificial na base")
+                temSolucao = False
+                break
+        contador -= 1
+        indice -= 1
 
     i = len( tabelaSimplex[0]) -2
     aux = quantRestricoesDesigualdade + quantRestricoesIgualdade
@@ -311,6 +332,7 @@ def carregarFuncaoObjetivosAposFaseI():
     procurarVariaveisBasicasAposFaseI(quantRestricoesMaiorIgual + quantRestricoesDesigualdade + quantRestricoesIgualdade)
     
     print(tabelaSimplex)
+    return temSolucao
 
 def adicionarFuncaoObjetivoFaseIComApenasDesigualdade(quantDeVariaveisDeDecisao,quantidadeVariaveisArtificiais, quantRestricoesDesigualdade):
     for i in range(0 , quantRestricoesDesigualdade  + 1):
@@ -406,8 +428,10 @@ def executarFaseUm():
         verificarMenorNumero()
         if(indiceColunaPivo == -1):
             print("Fase I concluída")
-            carregarFuncaoObjetivosAposFaseI()
-            executarFaseDois()
+            if(carregarFuncaoObjetivosAposFaseI()):
+                executarFaseDois()
+            else:
+                print("o problema não tem solução")
             break
         if(verificarQualALinhaPivo()):
             print("a solução é ilimitada")
